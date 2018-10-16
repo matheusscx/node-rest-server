@@ -3,11 +3,14 @@
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
+  "engines": {
+    "node": "10.11.0"
+  },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "node server/server"
   },
-  "author": "",
+  "author": "Cesar Matheus",
   "license": "ISC",
   "dependencies": {
     "bcrypt": "^3.0.1",
