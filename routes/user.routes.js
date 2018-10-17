@@ -2,9 +2,10 @@ const express = require('express');
 const Users = require('../models/user.models');
 const bcrypt = require('bcrypt');
 const _ = require('underscore');
+const { validarToken, validarAdminRole } = require('../middleware/middlewares')
 const app = express.Router();
 
-app.get('/users', (req, res) => {
+app.get('/users', validarToken, (req, res) => {
     let skip = Number(req.query.skip) || 0;
     let limit = Number(req.query.limit) || 5;
 
@@ -13,16 +14,16 @@ app.get('/users', (req, res) => {
         .limit(limit)
         .exec((err, users) => {
             if (err) {
-                res.status(400).json({
+                res.status(500).json({
                     status: false,
                     err
                 });
             } else {
                 if (!users[0]) {
-                    res.status(404).json({
+                    res.status(400).json({
+                        status: false,
                         err: {
-                            status: false,
-                            message: "No records found",
+                            message: 'No records found',
                         }
                     });
                 } else {
@@ -38,20 +39,20 @@ app.get('/users', (req, res) => {
         });
 });
 
-app.get('/users/:id', (req, res) => {
+app.get('/users/:id', validarToken, (req, res) => {
     let { id } = req.params;
     Users.findById(id, (err, user) => {
         if (err) {
-            res.status(400).json({
+            res.status(500).json({
                 status: false,
                 err
             });
         } else {
             if (!user) {
-                res.status(404).json({
+                res.status(400).json({
+                    status: false,
                     err: {
-                        status: false,
-                        message: "No records found",
+                        message: 'No records found',
                     }
                 });
             } else {
@@ -64,7 +65,7 @@ app.get('/users/:id', (req, res) => {
     });
 });
 
-app.post('/users', (req, res) => {
+app.post('/users', [validarToken, validarAdminRole], (req, res) => {
     let body = req.body;
     let user = new Users({
         name: body.name,
@@ -74,7 +75,7 @@ app.post('/users', (req, res) => {
     });
     user.save((err, user) => {
         if (err) {
-            res.status(400).json({
+            res.status(500).json({
                 status: false,
                 err
             });
@@ -87,21 +88,21 @@ app.post('/users', (req, res) => {
     });
 });
 
-app.put('/users/:id', (req, res) => {
+app.put('/users/:id', [validarToken,validarAdminRole], (req, res) => {
     let { id } = req.params;
     let body = _.pick(req.body, ['name', 'email', 'img', 'role', 'status']);
     Users.findOneAndUpdate({ _id: id }, body, { new: true, runValidators: true }, (err, user) => {
         if (err) {
-            res.status(400).json({
+            res.status(500).json({
                 status: false,
                 err
             });
         } else {
             if (!user) {
-                res.status(404).json({
+                res.status(400).json({
+                    status: false,
                     err: {
-                        status: false,
-                        message: "No records found",
+                        message: 'No records found',
                     }
                 });
             } else {
@@ -114,20 +115,30 @@ app.put('/users/:id', (req, res) => {
     });
 });
 
-app.delete('/users/:id', (req, res) => {
+app.delete('/users/:id', [validarToken, validarAdminRole], (req, res) => {
     let { id } = req.params
     Users.findOneAndUpdate({ _id: id }, { $set: { status: false } }, { new: true }, (err, user) => {
         if (err) {
-            res.status(400).json({
+            res.status(500).json({
                 status: false,
                 err
             });
         } else {
-            res.json({
-                status: true,
-                user
-            });
-        }
+            if (!user) {
+                res.status(400).json({
+                    status: false,
+                    err: {
+                        message: 'No records found',
+                    }
+                });
+            } else {
+                res.json({
+                    status: true,
+                    user
+                });
+            };
+
+        };
     });
 });
 
