@@ -26,7 +26,7 @@ let userSchema = new Schema({
     img: {
         type: String,
         require: false,
-        default: 'avatar-none.jpg'
+        default: null
     },
     role: {
         type: String,
