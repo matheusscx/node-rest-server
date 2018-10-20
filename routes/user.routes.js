@@ -88,7 +88,7 @@ app.post('/users', [validarToken, validarAdminRole], (req, res) => {
     });
 });
 
-app.put('/users/:id', [validarToken,validarAdminRole], (req, res) => {
+app.put('/users/:id', [validarToken, validarAdminRole], (req, res) => {
     let { id } = req.params;
     let body = _.pick(req.body, ['name', 'email', 'img', 'role', 'status']);
     Users.findOneAndUpdate({ _id: id }, body, { new: true, runValidators: true }, (err, user) => {
