@@ -31,10 +31,24 @@ let validarAdminRole = (req, res, next) => {
     }
 }
 
-
+let validarTokenImg = (req, res, next) => {
+    let token = req.query.token;
+    jwt.verify(token, process.env.SEED_TOKEN, (err, decoded) => {
+        if (err) {
+            res.status(401).json({
+                status: false,
+                err
+            });
+        } else {
+            req.user = decoded.user;
+            next();
+        }
+    });
+}
 
 
 module.exports = {
     validarToken,
-    validarAdminRole
+    validarAdminRole,
+    validarTokenImg
 }
